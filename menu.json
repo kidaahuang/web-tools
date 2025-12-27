@@ -1,0 +1,34 @@
+[
+  {
+    "category": "雲端工具",
+    "items": [
+      {"title": "Google Drive", "url": "https://drive.google.com"},
+      {"title": "Dropbox", "url": "https://www.dropbox.com"},
+      {"title": "Notion", "url": "https://www.notion.so"}
+    ]
+  },
+  {
+    "category": "設計靈感",
+    "items": [
+      {"title": "Behance", "url": "https://www.behance.net"},
+      {"title": "Dribbble", "url": "https://dribbble.com"},
+      {"title": "Pinterest", "url": "https://www.pinterest.com"}
+    ]
+  },
+  {
+    "category": "開發者工具",
+    "items": [
+      {"title": "GitHub", "url": "https://github.com"},
+      {"title": "MDN Web Docs", "url": "https://developer.mozilla.org"},
+      {"title": "Stack Overflow", "url": "https://stackoverflow.com"}
+    ]
+  },
+  {
+    "category": "學習資源",
+    "items": [
+      {"title": "Coursera", "url": "https://www.coursera.org"},
+      {"title": "freeCodeCamp", "url": "https://www.freecodecamp.org"},
+      {"title": "YouTube", "url": "https://www.youtube.com"}
+    ]
+  }
+]

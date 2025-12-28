@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Formatter</title>
+    <style>
+      :root {
+        font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+        background: #f5f6fb;
+        color: #1e1e26;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 32px 16px 56px;
+        background: radial-gradient(circle at top, #ffffff, #edf0f8 60%, #e3e6f2);
+      }
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      header h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 4vw, 2.8rem);
+      }
+      header p {
+        margin: 0 auto;
+        max-width: 620px;
+        color: #5d657f;
+      }
+      .panel {
+        background: #fff;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 12px 30px rgba(28, 35, 55, 0.08);
+        border: 1px solid rgba(70, 78, 105, 0.08);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+      }
+      label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+      }
+      textarea {
+        width: 100%;
+        min-height: 220px;
+        border-radius: 12px;
+        border: 1px solid #d6d9e6;
+        padding: 12px;
+        font-size: 0.98rem;
+        resize: vertical;
+        font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+        background: #fbfbfe;
+      }
+      textarea[readonly] {
+        background: #f6f7fb;
+      }
+      .settings {
+        margin-top: 18px;
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px solid #e1e5f2;
+        background: #f9faff;
+      }
+      .settings h2 {
+        margin: 0 0 12px;
+        font-size: 1rem;
+      }
+      .option-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .option-group label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 500;
+        margin: 0;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      button {
+        border: none;
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      button.primary {
+        background: #3c6ef3;
+        color: #fff;
+        box-shadow: 0 10px 20px rgba(60, 110, 243, 0.25);
+      }
+      button.secondary {
+        background: #eef1fb;
+        color: #2f3550;
+      }
+      button:hover {
+        transform: translateY(-1px);
+      }
+      .message {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: #fff6e6;
+        color: #8a5b00;
+        border: 1px solid #f6d9a0;
+        display: none;
+      }
+      .message strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+      .footer-link {
+        margin-top: 28px;
+        text-align: center;
+      }
+      .footer-link a {
+        color: #3c6ef3;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>JSON Formatter</h1>
+        <p>貼上原始 JSON，快速格式化、壓縮並檢查語法錯誤。</p>
+      </header>
+
+      <section class="panel">
+        <div class="grid">
+          <div>
+            <label for="rawJson">原始 JSON</label>
+            <textarea id="rawJson" placeholder="輸入或貼上 JSON 內容"></textarea>
+          </div>
+          <div>
+            <label for="formattedJson">格式化後 JSON</label>
+            <textarea
+              id="formattedJson"
+              placeholder="格式化結果會顯示在這裡"
+              readonly
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="settings">
+          <h2>縮排格式</h2>
+          <div class="option-group">
+            <label>
+              <input type="radio" name="indent" value="2" checked /> 2 spaces
+            </label>
+            <label>
+              <input type="radio" name="indent" value="4" /> 4 spaces
+            </label>
+            <label>
+              <input type="radio" name="indent" value="tab" /> 1 tab
+            </label>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" type="button" id="formatBtn">格式化</button>
+          <button class="secondary" type="button" id="minifyBtn">壓縮</button>
+          <button class="secondary" type="button" id="clearBtn">清空</button>
+        </div>
+
+        <div class="message" id="errorMessage">
+          <strong>JSON 解析失敗</strong>
+          <div id="errorReason"></div>
+        </div>
+      </section>
+
+      <div class="footer-link">
+        <a href="index.html">回到工具總覽</a>
+      </div>
+    </div>
+
+    <script>
+      const rawJson = document.getElementById("rawJson");
+      const formattedJson = document.getElementById("formattedJson");
+      const formatBtn = document.getElementById("formatBtn");
+      const minifyBtn = document.getElementById("minifyBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const errorMessage = document.getElementById("errorMessage");
+      const errorReason = document.getElementById("errorReason");
+
+      const getIndent = () => {
+        const checked = document.querySelector("input[name='indent']:checked");
+        if (checked?.value === "tab") {
+          return "\t";
+        }
+        return Number.parseInt(checked?.value ?? "2", 10);
+      };
+
+      const showError = (message) => {
+        errorReason.textContent = message;
+        errorMessage.style.display = "block";
+      };
+
+      const clearError = () => {
+        errorMessage.style.display = "none";
+        errorReason.textContent = "";
+      };
+
+      const parseJson = () => {
+        const input = rawJson.value.trim();
+        if (!input) {
+          throw new Error("請先輸入 JSON 內容。");
+        }
+        return JSON.parse(input);
+      };
+
+      formatBtn.addEventListener("click", () => {
+        clearError();
+        try {
+          const data = parseJson();
+          formattedJson.value = JSON.stringify(data, null, getIndent());
+        } catch (error) {
+          showError(error.message);
+        }
+      });
+
+      minifyBtn.addEventListener("click", () => {
+        clearError();
+        try {
+          const data = parseJson();
+          formattedJson.value = JSON.stringify(data);
+        } catch (error) {
+          showError(error.message);
+        }
+      });
+
+      clearBtn.addEventListener("click", () => {
+        rawJson.value = "";
+        formattedJson.value = "";
+        clearError();
+      });
+    </script>
+  </body>
+</html>

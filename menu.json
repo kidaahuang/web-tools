@@ -30,5 +30,11 @@
       {"title": "freeCodeCamp", "url": "https://www.freecodecamp.org"},
       {"title": "YouTube", "url": "https://www.youtube.com"}
     ]
+  },
+  {
+    "category": "文字工具",
+    "items": [
+      {"title": "Base64 編解碼", "url": "base64.html"}
+    ]
   }
 ]

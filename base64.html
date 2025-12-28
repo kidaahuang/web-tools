@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Base64 編解碼工具</title>
+    <style>
+      :root {
+        font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+        background: #f5f6fb;
+        color: #1e1e26;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 32px 16px 56px;
+        background: radial-gradient(circle at top, #ffffff, #edf0f8 60%, #e3e6f2);
+      }
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      header h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 4vw, 2.8rem);
+      }
+      header p {
+        margin: 0 auto;
+        max-width: 620px;
+        color: #5d657f;
+      }
+      .panel {
+        background: #fff;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 12px 30px rgba(28, 35, 55, 0.08);
+        border: 1px solid rgba(70, 78, 105, 0.08);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+      }
+      label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+      }
+      textarea {
+        width: 100%;
+        min-height: 160px;
+        border-radius: 12px;
+        border: 1px solid #d6d9e6;
+        padding: 12px;
+        font-size: 0.98rem;
+        resize: vertical;
+        font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+        background: #fbfbfe;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      button {
+        border: none;
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      button.primary {
+        background: #3c6ef3;
+        color: #fff;
+        box-shadow: 0 10px 20px rgba(60, 110, 243, 0.25);
+      }
+      button.secondary {
+        background: #eef1fb;
+        color: #2f3550;
+      }
+      button:hover {
+        transform: translateY(-1px);
+      }
+      .message {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: #fff6e6;
+        color: #8a5b00;
+        border: 1px solid #f6d9a0;
+        display: none;
+      }
+      .message strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+      .footer-link {
+        margin-top: 28px;
+        text-align: center;
+      }
+      .footer-link a {
+        color: #3c6ef3;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Base64 編解碼工具</h1>
+        <p>將文字快速轉成 Base64，或把 Base64 字串還原為原始內容。</p>
+      </header>
+
+      <section class="panel">
+        <div class="grid">
+          <div>
+            <label for="plainText">原始文字</label>
+            <textarea
+              id="plainText"
+              placeholder="輸入要編碼的文字"
+            ></textarea>
+            <div class="actions">
+              <button class="primary" type="button" id="encodeBtn">編碼成 Base64</button>
+              <button class="secondary" type="button" id="clearPlain">清空</button>
+            </div>
+          </div>
+          <div>
+            <label for="base64Text">Base64 字串</label>
+            <textarea
+              id="base64Text"
+              placeholder="輸入要解碼的 Base64 字串"
+            ></textarea>
+            <div class="actions">
+              <button class="primary" type="button" id="decodeBtn">解碼成文字</button>
+              <button class="secondary" type="button" id="clearBase64">清空</button>
+            </div>
+          </div>
+        </div>
+        <div class="message" id="errorMessage">
+          <strong>解碼失敗</strong>
+          <div id="errorReason"></div>
+        </div>
+      </section>
+
+      <div class="footer-link">
+        <a href="index.html">回到工具總覽</a>
+      </div>
+    </div>
+
+    <script>
+      const plainText = document.getElementById("plainText");
+      const base64Text = document.getElementById("base64Text");
+      const encodeBtn = document.getElementById("encodeBtn");
+      const decodeBtn = document.getElementById("decodeBtn");
+      const clearPlain = document.getElementById("clearPlain");
+      const clearBase64 = document.getElementById("clearBase64");
+      const errorMessage = document.getElementById("errorMessage");
+      const errorReason = document.getElementById("errorReason");
+
+      const toBase64 = (text) => {
+        const bytes = new TextEncoder().encode(text);
+        let binary = "";
+        bytes.forEach((byte) => {
+          binary += String.fromCharCode(byte);
+        });
+        return btoa(binary);
+      };
+
+      const fromBase64 = (value) => {
+        const cleaned = value.trim();
+        if (!cleaned) {
+          throw new Error("內容是空的，請先輸入 Base64 字串。");
+        }
+        const normalized = cleaned.replace(/\s+/g, "");
+        const binary = atob(normalized);
+        const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+        return new TextDecoder().decode(bytes);
+      };
+
+      const showError = (message) => {
+        errorReason.innerHTML = message;
+        errorMessage.style.display = "block";
+      };
+
+      const clearError = () => {
+        errorMessage.style.display = "none";
+        errorReason.textContent = "";
+      };
+
+      encodeBtn.addEventListener("click", () => {
+        clearError();
+        base64Text.value = toBase64(plainText.value);
+      });
+
+      decodeBtn.addEventListener("click", () => {
+        clearError();
+        try {
+          plainText.value = fromBase64(base64Text.value);
+        } catch (error) {
+          showError(
+            `${error.message}<br />可能原因：<ul><li>字串含有非 Base64 字元（例如空白或符號）。</li><li>缺少補齊的 <code>=</code> 字元。</li><li>並非 UTF-8 文字內容或 Base64 字串已被截斷。</li></ul>`
+          );
+        }
+      });
+
+      clearPlain.addEventListener("click", () => {
+        plainText.value = "";
+      });
+
+      clearBase64.addEventListener("click", () => {
+        base64Text.value = "";
+        clearError();
+      });
+    </script>
+  </body>
+</html>
